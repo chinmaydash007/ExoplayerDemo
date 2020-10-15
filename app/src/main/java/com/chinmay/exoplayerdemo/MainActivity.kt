@@ -113,14 +113,15 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
         mediaBrowserHelper.onStop()
     }
 
-
+    //these methods are responsible for changing the ui state when the media start playing
+    //1
     override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
         if (metadata != null) {
             Log.d(TAG, "onMetadataChanged: called" + metadata.description.title)
             setSongTitle(metadata.description.title)
         }
     }
-
+    //2
     override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
         var mIsPlaying = state != null &&
                 state.state == PlaybackStateCompat.STATE_PLAYING
@@ -128,7 +129,9 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
         changePlayPauseImage(mIsPlaying)
     }
 
+    //Broadcast receiver for updating timer.
     private inner class SeekBarBroadcastReceiver : BroadcastReceiver() {
+        //3
         override fun onReceive(context: Context, intent: Intent) {
             val seekProgress = intent.getLongExtra(SEEK_BAR_PROGRESS, 0)
             val seekMax = intent.getLongExtra(SEEK_BAR_MAX, 0)
@@ -190,6 +193,7 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
     }
 }
 
+//model class for API response
 data class RandomMedia(
     var mediaId: String,
     var artist: String,

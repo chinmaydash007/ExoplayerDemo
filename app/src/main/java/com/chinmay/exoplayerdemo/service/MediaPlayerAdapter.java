@@ -12,7 +12,6 @@ import android.util.Log;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -54,10 +53,14 @@ public class MediaPlayerAdapter extends PlayerAdapter {
 
     private void initializeExoPlayer() {
         if (mExoPlayer == null) {
-            mTrackSelector = new DefaultTrackSelector();
+            mTrackSelector = new DefaultTrackSelector(mContext);
             mRenderersFactory = new DefaultRenderersFactory(mContext);
             mDataSourceFactory = new DefaultDataSourceFactory(mContext, "AudioStreamer");
-            mExoPlayer = ExoPlayerFactory.newSimpleInstance(mRenderersFactory, mTrackSelector, new DefaultLoadControl());
+//            mExoPlayer = ExoPlayerFactory.newSimpleInstance(mRenderersFactory, mTrackSelector, new DefaultLoadControl());
+            mExoPlayer = new SimpleExoPlayer.Builder(mContext, mRenderersFactory)
+                    .setTrackSelector(mTrackSelector)
+                    .setLoadControl(new DefaultLoadControl())
+                    .build();
 
             if (mExoPlayerEventListener == null) {
                 mExoPlayerEventListener = new ExoPlayerEventListener();
@@ -176,17 +179,17 @@ public class MediaPlayerAdapter extends PlayerAdapter {
 
     private void startTrackingPlayback() {
         final Handler handler = new Handler(Looper.getMainLooper());
-        final Runnable runnable = new Runnable(){
+        final Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                if(isPlaying()){
+                if (isPlaying()) {
                     mPlaybackInfoListener.onSeekTo(
                             mExoPlayer.getContentPosition(), mExoPlayer.getDuration()
                     );
                     handler.postDelayed(this, 1000);
                 }
-                if(mExoPlayer.getContentPosition() >= mExoPlayer.getDuration()
-                        && mExoPlayer.getDuration() > 0){
+                if (mExoPlayer.getContentPosition() >= mExoPlayer.getDuration()
+                        && mExoPlayer.getDuration() > 0) {
                     mPlaybackInfoListener.onPlaybackComplete();
                 }
             }
@@ -212,7 +215,7 @@ public class MediaPlayerAdapter extends PlayerAdapter {
 
     }
 
-    private void publishStateBuilder(long reportPosition){
+    private void publishStateBuilder(long reportPosition) {
         final PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
         stateBuilder.setActions(getAvailableActions());
         stateBuilder.setState(mState,

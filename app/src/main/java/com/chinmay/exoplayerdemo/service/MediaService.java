@@ -2,6 +2,7 @@ package com.chinmay.exoplayerdemo.service;
 
 import android.app.Notification;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -208,7 +209,7 @@ public class MediaService extends MediaBrowserServiceCompat {
         private ServiceManager mServiceManager;
 
         public MediaPlayerListener() {
-            mServiceManager=new ServiceManager();
+            mServiceManager = new ServiceManager();
         }
 
         @Override
@@ -261,7 +262,7 @@ public class MediaService extends MediaBrowserServiceCompat {
                     case PlaybackStateCompat.STATE_PLAYING:
                         notification =
                                 mMediaNotificationManager.buildNotification(
-                                        state, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), null);
+                                        state, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), BitmapFactory.decodeResource(getBaseContext().getResources(), R.drawable.hello));
 
                         if (!mIsServiceStarted) {
                             ContextCompat.startForegroundService(
@@ -277,7 +278,7 @@ public class MediaService extends MediaBrowserServiceCompat {
                         stopForeground(false);
                         notification =
                                 mMediaNotificationManager.buildNotification(
-                                        state, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), null);
+                                        state, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), BitmapFactory.decodeResource(getBaseContext().getResources(), R.drawable.hello));
                         mMediaNotificationManager.getNotificationManager()
                                 .notify(MediaNotificationManager.NOTIFICATION_ID, notification);
                         break;

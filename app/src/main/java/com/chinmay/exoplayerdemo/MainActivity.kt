@@ -16,6 +16,7 @@ import com.chinmay.exoplayerdemo.Constants.SEEK_BAR_PROGRESS
 import com.chinmay.exoplayerdemo.databinding.MainActivityBinding
 import com.chinmay.exoplayerdemo.service.MediaService
 
+
 class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
     var TAG = this.javaClass.simpleName
     lateinit var binding: MainActivityBinding
@@ -27,36 +28,31 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        if(savedInstanceState!=null){
-            selectedMediaMetadataCompat=savedInstanceState.getParcelable<MediaMetadataCompat>("selectedMedia")
-            isPlaying=savedInstanceState.getBoolean("isPlaying")
+        if (savedInstanceState != null) {
+            selectedMediaMetadataCompat =
+                savedInstanceState.getParcelable<MediaMetadataCompat>("selectedMedia")
+            isPlaying = savedInstanceState.getBoolean("isPlaying")
             changePlayPauseImage(isPlaying)
 
-        }
 
+        }
 
         val myApplication: MyApplication = MyApplication.getInstance()
         mediaBrowserHelper = MediaBrowserHelper(this, MediaService::class.java)
         mediaBrowserHelper.setMediaBrowserHelperCallback(this)
 
-        val mMediaLibrary = mutableListOf(
-            MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, "11111")
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, "Mitch Tabian & Jim Wilson")
-                .putString(
-                    MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI,
-                    "https://codingwithmitch.s3.amazonaws.com/static/profile_images/default_avatar.jpg"
-                )
-                .putString(
-                    MediaMetadataCompat.METADATA_KEY_TITLE,
-                    "Yoga Session-Episode 1"
-                )
-                .putString(
-                    MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
-                    "https://tik.getvisitapp.com/output/session-44/hls/session-44-Mindful-use-of-Technology.m3u8"
-                )
-                .build()
+
+        var randomMedia = RandomMedia(
+            "11111",
+            "Yoga Teacher",
+            "Yoga Session-Episode 1",
+            "https://tik.getvisitapp.com/output/session-44/hls/session-44-Mindful-use-of-Technology.m3u8",
+            "",
+            "https://codingwithmitch.s3.amazonaws.com/static/profile_images/default_avatar.jpg"
         )
+
+
+        val mMediaLibrary = getMediaLibrary(randomMedia)
 
         myApplication.setMediaItems(mMediaLibrary)
 
@@ -70,6 +66,29 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
             }
         }
     }
+
+    private fun getMediaLibrary(randomMedia: RandomMedia): MutableList<MediaMetadataCompat> {
+        val mMediaLibrary = mutableListOf(
+            MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, randomMedia.mediaId)
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, randomMedia.artist)
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI,
+                    randomMedia.icon_Uri
+                )
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_TITLE,
+                    randomMedia.title
+                )
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
+                    randomMedia.media_uri
+                )
+                .build()
+        )
+        return mMediaLibrary
+    }
+
 
     override fun onStart() {
         super.onStart()
@@ -115,9 +134,22 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
             val seekMax = intent.getLongExtra(SEEK_BAR_MAX, 0)
             var timeElapsed = seekProgress / 1000
             var totalTime = seekMax / 1000
-            binding.textView.text = "$timeElapsed / $totalTime"
+
+            if (seekMax > 0) {
+                binding.textView.text = "${getDuration(timeElapsed)} / ${getDuration(totalTime)}"
+            }
+
             Log.d(TAG, "seekProgress:$seekProgress     seekmax:$seekMax")
         }
+    }
+
+    private fun getDuration(seconds: Long): String {
+        val p1 = (seconds % 60).toInt()
+        var p2 = (seconds / 60).toInt()
+        val p3 = p2 % 60
+        p2 = p2 / 60
+        return "$p2:$p3:$p1"
+
     }
 
     private fun initSeekBarBroadcastReceiver() {
@@ -150,44 +182,12 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
         binding.mediaSongTitle.text = title
     }
 
-    fun addToMediaList(randomMedia: RandomMedia): MediaMetadataCompat {
-        val media = MediaMetadataCompat.Builder()
-            .putString(
-                MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
-                randomMedia.mediaId
-            )
-            .putString(
-                MediaMetadataCompat.METADATA_KEY_ARTIST,
-                randomMedia.artist
-            )
-            .putString(
-                MediaMetadataCompat.METADATA_KEY_TITLE,
-                randomMedia.title
-            )
-            .putString(
-                MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
-                randomMedia.media_uri
-            )
-            .putString(
-                MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION,
-                randomMedia.desc
-            )
-            .putString(
-                MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI,
-                randomMedia.icon_Uri
-            )
-            .build()
-        return media
-    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelable("selectedMedia", selectedMediaMetadataCompat)
         outState.putBoolean("isPlaying", isPlaying)
     }
-
-
-
 }
 
 data class RandomMedia(

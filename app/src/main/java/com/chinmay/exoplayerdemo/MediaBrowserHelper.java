@@ -29,29 +29,31 @@ public class MediaBrowserHelper {
     private MediaControllerCallback mMediaControllerCallback;
     private MediaBrowserHelperCallback mMediaBrowserCallback;
 
+    private StartPlaying startPlayingAudio;
+    private boolean isAlreadyPlayingBefore = false;
+
 
     public MediaBrowserHelper(Context context, Class<? extends MediaBrowserServiceCompat> serviceClass) {
         mContext = context;
         mMediaBrowserServiceClass = serviceClass;
-
         mMediaBrowserConnectionCallback = new MediaBrowserConnectionCallback();
         mMediaBrowserSubscriptionCallback = new MediaBrowserSubscriptionCallback();
         mMediaControllerCallback = new MediaControllerCallback();
+        startPlayingAudio = (StartPlaying) mContext;
 
     }
 
-    public void setMediaBrowserHelperCallback(MediaBrowserHelperCallback callback){
+    public void setMediaBrowserHelperCallback(MediaBrowserHelperCallback callback) {
         mMediaBrowserCallback = callback;
     }
 
     // Receives callbacks from the MediaController and updates the UI state,
     // i.e.: Which is the current item, whether it's playing or paused, etc.
     private class MediaControllerCallback extends MediaControllerCompat.Callback {
-
         @Override
         public void onMetadataChanged(final MediaMetadataCompat metadata) {
             Log.d(TAG, "onMetadataChanged: CALLED");
-            if(mMediaBrowserCallback != null){
+            if (mMediaBrowserCallback != null) {
                 mMediaBrowserCallback.onMetadataChanged(metadata);
             }
         }
@@ -59,7 +61,7 @@ public class MediaBrowserHelper {
         @Override
         public void onPlaybackStateChanged(@Nullable final PlaybackStateCompat state) {
             Log.d(TAG, "onPlaybackStateChanged: CALLED");
-            if(mMediaBrowserCallback != null){
+            if (mMediaBrowserCallback != null) {
                 mMediaBrowserCallback.onPlaybackStateChanged(state);
             }
         }
@@ -110,6 +112,7 @@ public class MediaBrowserHelper {
                         new MediaControllerCompat(mContext, mMediaBrowser.getSessionToken());
                 mMediaController.registerCallback(mMediaControllerCallback);
 
+
             } catch (RemoteException e) {
                 Log.d(TAG, String.format("onConnected: Problem: %s", e.toString()));
                 throw new RuntimeException(e);
@@ -136,6 +139,11 @@ public class MediaBrowserHelper {
                 Log.d(TAG, "onChildrenLoaded: CALLED: queue item: " + mediaItem.getMediaId());
                 mMediaController.addQueueItem(mediaItem.getDescription());
             }
+            if (!isAlreadyPlayingBefore) {
+                startPlayingAudio.isConnectedAndStartplayingAudio();
+                isAlreadyPlayingBefore=true;
+            }
+
         }
     }
 

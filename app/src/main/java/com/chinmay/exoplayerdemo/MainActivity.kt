@@ -17,7 +17,7 @@ import com.chinmay.exoplayerdemo.databinding.MainActivityBinding
 import com.chinmay.exoplayerdemo.service.MediaService
 
 
-class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
+class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback, StartPlaying {
     var TAG = this.javaClass.simpleName
     lateinit var binding: MainActivityBinding
     lateinit var mediaBrowserHelper: MediaBrowserHelper
@@ -33,8 +33,6 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
                 savedInstanceState.getParcelable<MediaMetadataCompat>("selectedMedia")
             isPlaying = savedInstanceState.getBoolean("isPlaying")
             changePlayPauseImage(isPlaying)
-
-
         }
 
         val myApplication: MyApplication = MyApplication.getInstance()
@@ -93,11 +91,14 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
     override fun onStart() {
         super.onStart()
         mediaBrowserHelper.onStart()
+
     }
 
     override fun onResume() {
         super.onResume()
         initSeekBarBroadcastReceiver()
+
+
     }
 
     override fun onPause() {
@@ -121,6 +122,7 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
             setSongTitle(metadata.description.title)
         }
     }
+
     //2
     override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
         var mIsPlaying = state != null &&
@@ -190,6 +192,13 @@ class MainActivity : AppCompatActivity(), MediaBrowserHelperCallback {
         super.onSaveInstanceState(outState)
         outState.putParcelable("selectedMedia", selectedMediaMetadataCompat)
         outState.putBoolean("isPlaying", isPlaying)
+    }
+
+    //this method is a which control play() from MediaBrwserHelper.
+    override fun isConnectedAndStartplayingAudio() {
+        Log.d(TAG, "start Audio playback")
+        mediaBrowserHelper.transportControls.play()
+        isPlaying=true
     }
 }
 
